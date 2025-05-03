@@ -1,6 +1,6 @@
 [project]
 name = "django-scalar"
-version = "0.1.7"
+version = "0.2.0"
 description = "Publish your Django API docs with Scalar"
 readme = "README.md"
 authors = [
@@ -37,7 +37,7 @@ dependencies = [
 Homepage = "https://www.example.com/"
 Source = "https://github.com/oerd/django-scalar"
 
-[project.optional-dependencies]
+[dependency-groups]
 test = [
     "mypy==1.15.0", # https://github.com/python/mypy
     "django-stubs[compatible-mypy]==5.2.0", # https://github.com/typeddjango/django-stubs
@@ -47,8 +47,8 @@ test = [
     "djangorestframework-stubs==3.15.2", # https://github.com/typeddjango/djangorestframework-stubs
     "pytest-django==4.11.1", # https://github.com/pytest-dev/pytest-django
     "beautifulsoup4==4.12.3", # https://www.crummy.com/software/BeautifulSoup/
-
-    # Code quality
+]
+qa = [
     "pre-commit==4.1.0", # https://github.com/pre-commit/pre-commit
     "ruff==0.11.7", # https://github.com/astral-sh/ruff
     "coverage==7.6.12", # https://github.com/nedbat/coveragepy
@@ -57,6 +57,11 @@ test = [
 ]
 build = [
     "hatchling>=1.26.3",
+]
+all = [
+    {include-group = "test"},
+    {include-group = "qa"},
+    {include-group = "build"},
 ]
 
 [build-system]

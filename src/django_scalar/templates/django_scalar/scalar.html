@@ -20,22 +20,14 @@
     <script id="api-reference"
             data-url="{{ openapi_url }}"
             data-proxy-url="{{ scalar_proxy_url }}"></script>
-    {% comment %}
-    {# TODO: Including JS code in a template *will* be tricky! #}
-    {# TODO: Override the whole template, or the only config block. Use `verbatim` tags for the js code. #}
-    <script>
-      var configuration = {
-        authentication: {
-          preferredSecurityScheme: 'apiKey',
-          apiKey: {
-            token: 'Token {token}',
-          }
-        },
-        theme: 'purple', // if scalar_theme is defined above, the defaults themes will not work.
-      };
-      document.getElementById('api-reference').dataset.configuration = JSON.stringify(configuration);
-    </script>
-    {% endcomment %}
+    {% if theme %}
+      <script>
+        var configuration = {
+          theme: '{{ theme }}',
+        };
+        document.getElementById('api-reference').dataset.configuration = JSON.stringify(configuration);
+      </script>
+    {% endif %}
     <script src="{{ scalar_js_url }}"></script>
   </body>
 </html>

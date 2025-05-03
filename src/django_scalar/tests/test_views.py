@@ -34,19 +34,49 @@ class TestScalarViewer:
         # Check that the context contains the expected variables
         assert "openapi_url" in response.context_data
         assert "title" in response.context_data
+        assert "theme" in response.context_data
         assert "scalar_js_url" in response.context_data
         assert "scalar_proxy_url" in response.context_data
         assert "scalar_favicon_url" in response.context_data
 
         # Check the values of the context variables
         assert response.context_data["openapi_url"] == "/api/schema/"
-        assert response.context_data["title"] == "Scalar Api Reference"
+        assert response.context_data["title"] == "Scalar API Reference"
+        assert response.context_data["theme"] is None  # Default theme is None
         assert (
             response.context_data["scalar_js_url"]
             == "https://cdn.jsdelivr.net/npm/@scalar/api-reference"
         )
         assert response.context_data["scalar_proxy_url"] == ""
         assert response.context_data["scalar_favicon_url"] == "/static/favicon.ico"
+
+    def test_scalar_viewer_with_custom_parameters(self):
+        """Test that `scalar_viewer` accepts and uses custom parameters."""
+        request = RequestFactory().get("/")
+        custom_openapi_url = "/custom/schema/"
+        custom_title = "Custom API Reference"
+        custom_theme = "purple"
+        custom_js_url = "https://example.com/scalar.js"
+        custom_proxy_url = "https://example.com/proxy/"
+        custom_favicon_url = "/custom/favicon.ico"
+
+        response = scalar_viewer(
+            request,
+            openapi_url=custom_openapi_url,
+            title=custom_title,
+            scalar_theme=custom_theme,
+            scalar_js_url=custom_js_url,
+            scalar_proxy_url=custom_proxy_url,
+            scalar_favicon_url=custom_favicon_url,
+        )
+
+        # Check that the custom parameters are used
+        assert response.context_data["openapi_url"] == custom_openapi_url
+        assert response.context_data["title"] == custom_title
+        assert response.context_data["theme"] == custom_theme
+        assert response.context_data["scalar_js_url"] == custom_js_url
+        assert response.context_data["scalar_proxy_url"] == custom_proxy_url
+        assert response.context_data["scalar_favicon_url"] == custom_favicon_url
 
     def test_html_content_contains_context_data(self, client):
         """Test that the HTML content contains the expected context data."""
@@ -57,7 +87,7 @@ class TestScalarViewer:
         soup = BeautifulSoup(response.content, "html.parser")
 
         # Check that the title is correctly set
-        assert soup.title.string == "Scalar Api Reference"
+        assert soup.title.string == "Scalar API Reference"
 
         # Check that the favicon link is correctly set
         favicon_link = soup.find("link", rel="shortcut icon")
@@ -104,3 +134,25 @@ class TestScalarViewer:
         # Check for CSS link
         css_link = soup.find("link", rel="stylesheet")
         assert css_link is not None
+
+    def test_theme_configuration_in_html(self):
+        """Test that the theme configuration is correctly added to the HTML when a theme is provided."""
+        # Create a request and call scalar_viewer directly with a theme
+        request = RequestFactory().get("/")
+        response = scalar_viewer(request, scalar_theme="purple")
+
+        # Render the response
+        response.render()
+
+        # Parse the HTML content
+        soup = BeautifulSoup(response.content.decode(), "html.parser")
+
+        # Find the configuration script (should be after the api-reference script)
+        api_reference_script = soup.find("script", id="api-reference")
+        config_script = api_reference_script.find_next("script")
+
+        # Check that the configuration script exists and contains the theme
+        assert config_script is not None
+        assert "configuration" in config_script.text
+        assert "theme" in config_script.text
+        assert "purple" in config_script.text

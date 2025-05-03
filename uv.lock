@@ -258,7 +258,7 @@ wheels = [
 
 [[package]]
 name = "django-scalar"
-version = "0.1.7"
+version = "0.1.8"
 source = { editable = "." }
 dependencies = [
     { name = "django-filter" },
@@ -266,17 +266,15 @@ dependencies = [
     { name = "drf-spectacular" },
 ]
 
-[package.optional-dependencies]
-build = [
-    { name = "hatchling" },
-]
-test = [
+[package.dev-dependencies]
+all = [
     { name = "beautifulsoup4" },
     { name = "coverage" },
     { name = "django-coverage-plugin" },
     { name = "django-stubs", extra = ["compatible-mypy"] },
     { name = "djangorestframework-stubs" },
     { name = "djlint" },
+    { name = "hatchling" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -285,28 +283,69 @@ test = [
     { name = "pytest-sugar" },
     { name = "ruff" },
 ]
+build = [
+    { name = "hatchling" },
+]
+qa = [
+    { name = "coverage" },
+    { name = "django-coverage-plugin" },
+    { name = "djlint" },
+    { name = "pre-commit" },
+    { name = "ruff" },
+]
+test = [
+    { name = "beautifulsoup4" },
+    { name = "django-stubs", extra = ["compatible-mypy"] },
+    { name = "djangorestframework-stubs" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-django" },
+    { name = "pytest-mock" },
+    { name = "pytest-sugar" },
+]
 
 [package.metadata]
 requires-dist = [
-    { name = "beautifulsoup4", marker = "extra == 'test'", specifier = "==4.12.3" },
-    { name = "coverage", marker = "extra == 'test'", specifier = "==7.6.12" },
-    { name = "django-coverage-plugin", marker = "extra == 'test'", specifier = "==3.1.0" },
     { name = "django-filter", specifier = ">=24" },
-    { name = "django-stubs", extras = ["compatible-mypy"], marker = "extra == 'test'", specifier = "==5.2.0" },
     { name = "djangorestframework", specifier = ">=3.15.0" },
-    { name = "djangorestframework-stubs", marker = "extra == 'test'", specifier = "==3.15.2" },
-    { name = "djlint", marker = "extra == 'test'", specifier = "==1.36.4" },
     { name = "drf-spectacular", specifier = ">=0.28.0" },
-    { name = "hatchling", marker = "extra == 'build'", specifier = ">=1.26.3" },
-    { name = "mypy", marker = "extra == 'test'", specifier = "==1.15.0" },
-    { name = "pre-commit", marker = "extra == 'test'", specifier = "==4.1.0" },
-    { name = "pytest", marker = "extra == 'test'", specifier = "==8.3.5" },
-    { name = "pytest-django", marker = "extra == 'test'", specifier = "==4.11.1" },
-    { name = "pytest-mock", marker = "extra == 'test'", specifier = "==3.14.0" },
-    { name = "pytest-sugar", marker = "extra == 'test'", specifier = "==1.0.0" },
-    { name = "ruff", marker = "extra == 'test'", specifier = "==0.11.7" },
 ]
-provides-extras = ["test", "build"]
+
+[package.metadata.requires-dev]
+all = [
+    { name = "beautifulsoup4", specifier = "==4.12.3" },
+    { name = "coverage", specifier = "==7.6.12" },
+    { name = "django-coverage-plugin", specifier = "==3.1.0" },
+    { name = "django-stubs", extras = ["compatible-mypy"], specifier = "==5.2.0" },
+    { name = "djangorestframework-stubs", specifier = "==3.15.2" },
+    { name = "djlint", specifier = "==1.36.4" },
+    { name = "hatchling", specifier = ">=1.26.3" },
+    { name = "mypy", specifier = "==1.15.0" },
+    { name = "pre-commit", specifier = "==4.1.0" },
+    { name = "pytest", specifier = "==8.3.5" },
+    { name = "pytest-django", specifier = "==4.11.1" },
+    { name = "pytest-mock", specifier = "==3.14.0" },
+    { name = "pytest-sugar", specifier = "==1.0.0" },
+    { name = "ruff", specifier = "==0.11.7" },
+]
+build = [{ name = "hatchling", specifier = ">=1.26.3" }]
+qa = [
+    { name = "coverage", specifier = "==7.6.12" },
+    { name = "django-coverage-plugin", specifier = "==3.1.0" },
+    { name = "djlint", specifier = "==1.36.4" },
+    { name = "pre-commit", specifier = "==4.1.0" },
+    { name = "ruff", specifier = "==0.11.7" },
+]
+test = [
+    { name = "beautifulsoup4", specifier = "==4.12.3" },
+    { name = "django-stubs", extras = ["compatible-mypy"], specifier = "==5.2.0" },
+    { name = "djangorestframework-stubs", specifier = "==3.15.2" },
+    { name = "mypy", specifier = "==1.15.0" },
+    { name = "pytest", specifier = "==8.3.5" },
+    { name = "pytest-django", specifier = "==4.11.1" },
+    { name = "pytest-mock", specifier = "==3.14.0" },
+    { name = "pytest-sugar", specifier = "==1.0.0" },
+]
 
 [[package]]
 name = "django-stubs"

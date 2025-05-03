@@ -1,139 +1,159 @@
-# Django Scalar
+# Django Scalar API Reference
 
-Django-Scalar provides an easy way to serve your API docs with [Scalar](https://scalar.com).
+[![PyPI version](https://badge.fury.io/py/django-scalar.svg)](https://badge.fury.io/py/django-scalar) <!-- TODO: Add actual PyPI link/badge if published -->
 
-> **Note**: This project is still in its early stages. Pull requests are welcome.
+A simple Django app to integrate the beautiful [Scalar API Reference](https://github.com/scalar/scalar) viewer.
+
+## Features
+
+*   Easily display your OpenAPI schema using Scalar.
+*   Configurable via Django settings.
+*   Allows multiple, differently configured Scalar instances within one project.
+*   Supports custom themes and JS library locations.
 
 ## Installation
 
-The python package to install is `django-scalar`. You can install it with `pip install django-scalar`
-or `uv add django-scalar` based on your preferred python package manager.
+1.  Install the package using `pip` (or your preferred package manager like `uv`):
 
-## Integrate in your Django app
+    ```bash
+    pip install django-scalar
+    # or
+    uv pip install django-scalar
+    ```
 
-At this stage, the view expects that you have your OpenAPI schema published
-with `DRF-Spectacular` under the `api/schema/` endpoint. See below under **Customize
-Django Scalar** for how you can customize this.
+2.  Add `django_scalar` to your `INSTALLED_APPS` in your Django project's `settings.py`:
 
-To integrate django scalar include `django-scalar.views.scalar_viewer` in your `urls.py`.
+    ```python
+    # settings.py
+    INSTALLED_APPS = [
+        # ... other apps
+        'django_scalar',
+        # ... other apps
+    ]
+    ```
+
+## Quick Start
+
+1.  Ensure you have an OpenAPI schema file (e.g., `openapi.yaml` or `schema.json`) served by your Django project or accessible via a URL. A common pattern is to use a library like `drf-spectacular` to generate and serve this at a specific path.
+
+2.  Add the Scalar view to your project's `urls.py`:
+
+    ```python
+    # project/urls.py
+    from django.urls import path
+    from django_scalar import views as scalar_views
+
+    urlpatterns = [
+        # ... other url patterns
+        # Add the Scalar view, assuming your schema is at /api/schema/
+        path('api/docs/', scalar_views.scalar_viewer, name='scalar_api_docs'),
+        # Make sure you have a view serving your schema at the configured URL
+        # Example using drf-spectacular:
+        # path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    ]
+    ```
+
+3.  Visit `/api/docs/` in your browser to see the Scalar API Reference.
+
+## Configuration
+
+You can customize the Scalar view by adding `SCALAR_` prefixed settings to your Django project's `settings.py`. If not set, sensible defaults are used.
+
+Available settings:
+
+*   `SCALAR_OPENAPI_URL` (str): The URL to your OpenAPI schema file.
+    *   Default: `"/api/schema/"`
+*   `SCALAR_TITLE` (str): The title displayed on the Scalar page tab and header.
+    *   Default: `"Scalar API Reference"`
+*   `SCALAR_THEME` (str | None): The theme for the Scalar viewer (e.g., `'light'`, `'dark'`, `'moonlight'`, `'purplehaze'`, `'eclipse'`, `'solarized'`). Set to `None` to use Scalar's default theme detection.
+    *   Default: `None`
+*   `SCALAR_JS_URL` (str): The URL for the Scalar JavaScript library bundle. Use this to point to a specific version or a self-hosted copy.
+    *   Default: `"https://cdn.jsdelivr.net/npm/@scalar/api-reference"`
+*   `SCALAR_PROXY_URL` (str): The URL to use for the Scalar API proxy service, if needed.
+    *   Default: `""` (empty string, proxy disabled)
+*   `SCALAR_FAVICON_URL` (str): The URL for the favicon displayed on the documentation page browser tab.
+    *   Default: `"/static/favicon.ico"`
+
+**Example `settings.py`:**
 
 ```python
+# settings.py
+
+# ... other settings
+
+SCALAR_TITLE = "My Awesome Project API"
+SCALAR_OPENAPI_URL = "/api/v1/openapi.json"
+SCALAR_THEME = "dark"
+
+# Make sure you serve your schema at SCALAR_OPENAPI_URL
+# REST_FRAMEWORK = {
+#     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+# }
+# SPECTACULAR_SETTINGS = {
+#     'TITLE': SCALAR_TITLE, # Keep titles consistent
+#     'VERSION': '1.0.0',
+#     # etc.
+# }
+```
+
+### Using Multiple Instances
+
+The `scalar_viewer` view function accepts arguments that allow you to override the global settings defined in `settings.py`. This is useful if you need to display multiple, different API documentation pages within the same project. A prominent example of this is publishing different API versions or internal vs. external APIs (_coming soon_: setting of separate authentication requirements).
+
+You can pass these arguments as the third item (a dictionary) in the `path()` definition in your `urls.py`.
+
+**Available View Arguments:**
+
+*   `openapi_url` (str): Overrides `SCALAR_OPENAPI_URL`.
+*   `title` (str): Overrides `SCALAR_TITLE`.
+*   `theme` (str | None): Overrides `SCALAR_THEME`.
+*   `scalar_js_url` (str): Overrides `SCALAR_JS_URL`.
+*   `scalar_proxy_url` (str): Overrides `SCALAR_PROXY_URL`.
+*   `scalar_favicon_url` (str): Overrides `SCALAR_FAVICON_URL`.
+
+**Example for Multiple Instances:`urls.py`**
+
+```python
+# project/urls.py
 from django.urls import path
-from django_scalar.views import scalar_viewer
-from drf_spectacular.views import SpectacularAPIView
+from django_scalar import views as scalar_views
+
+# Assuming you have views to serve different schemas:
+# from myapp.views import serve_v1_schema, serve_v2_schema
 
 urlpatterns = [
-    # ...existing URL patterns...
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    # Add this:
-    path("api-docs/", scalar_viewer, name="scalar-viewer"),
+    # Instance 1: Public API v1 (using default settings mostly)
+    # Assumes SCALAR_OPENAPI_URL points to the v1 schema or is overridden here
+    path('api/v1/docs/', scalar_views.scalar_viewer, {
+        'title': 'Public API v1 Docs',
+        'openapi_url': '/api/v1/schema.json'  # Explicitly set schema URL for v1
+        # theme will use SCALAR_THEME or default if not set
+    }, name='scalar_v1'),
+
+    # Instance 2: Public API v2 (different title, schema, maybe theme)
+    path('api/v2/docs/', scalar_views.scalar_viewer, {
+        'title': 'Public API v2 Docs',
+        'openapi_url': '/api/v2/schema.yaml',  # Point to the v2 schema
+        'theme': 'moonlight',  # Use a specific theme for v2
+    }, name='scalar_v2'),
+
+    # Instance 3: Internal API (different title, schema, uses default theme)
+    path('internal/api/docs/', scalar_views.scalar_viewer, {
+        'title': 'Internal Services API',
+        'openapi_url': '/internal/api/schema.json',
+        # theme will use SCALAR_THEME or default
+        # js_url, proxy_url, favicon_url use defaults from settings
+    }, name='scalar_internal'),
+
+    # --- Your views serving the schemas ---
+    # path('api/v1/schema.json', serve_v1_schema, name='schema_v1'),
+    # path('api/v2/schema.yaml', serve_v2_schema, name='schema_v2'),
+    # path('internal/api/schema.json', serve_internal_schema, name='schema_internal'),
+
+    # ... other url patterns
 ]
 ```
+Now, visiting `/api/v1/docs/`, `/api/v2/docs/`, and `/internal/api/docs/` will show differently configured Scalar instances.
 
-Feel free to change `api-docs/` to your liking. We've seen `api/docs` etc. in the wild.
-
-## Customize Django Scalar
-
-> ℹ️ **Note** we have plans to make this easier soon.
-
-The `scalar_viewer` view will pass on some hardcoded defaults to the template. You can
-[override the template](https://docs.djangoproject.com/en/5.2/howto/overriding-templates/)
-and change everything to match your environment.
-
-## Requirements:
-There are two main requirements for this project:
-- [drf-spectacular](https://drf-spectacular.readthedocs.io/en/latest/)
-- [django-filters](https://django-filter.readthedocs.io/en/stable/) (optional)
-
-This project implicitly depends on Django and Django-Rest-Framework.
-
-## Testing
-
-For information on running tests, see the [tests README](tests/README.md).
-
-## Documentation example:
-```python
-    #views.py
-    @extend_schema(
-        responses={200: UserSerializer},
-        tags=["User"],
-        description="Retrieve a list of all users",
-        methods=["GET"],
-        parameters=get_filter_parameters(UserFilter), ## this get_filter_parameters is using the django-filters base to create the necessary parameters automatically.
-    )
-    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        return super().list(request, *args, **kwargs)
-  #filters/user.py
-```
-## Using `get_filter_parameters`
-
-You need to create a basic or complex django-filter class and then use the script from
-[`get_filter_parameters`](https://github.com/m1guer/django-scalar/blob/main/src/django_scalar/get_filter_parameters.py)
-the auto-parse the class to a valid `OpenApiParameter`.
-
-```python
-  #(app)/filters/users.py
-  import django_filters
-  from django.conf import settings
-
-
-  class UserFilter(django_filters.FilterSet):
-      # Filter by username (case-insensitive exact match)
-      username = django_filters.CharFilter(lookup_expr="iexact")
-
-      # Filter by email (case-insensitive exact match)
-      email = django_filters.CharFilter(lookup_expr="iexact")
-
-      # Filter by full name (case-insensitive partial match)
-      full_name = django_filters.CharFilter(
-          field_name="first_name", lookup_expr="icontains", label="Full Name"
-      )
-
-      # Filter by is_active (boolean filter)
-      is_active = django_filters.BooleanFilter()
-
-      # Filter by date joined (range filter for datetime)
-      date_joined_start = django_filters.DateTimeFilter(
-          field_name="date_joined", lookup_expr="gte", label="Joined After"
-      )
-      date_joined_end = django_filters.DateTimeFilter(
-          field_name="date_joined", lookup_expr="lte", label="Joined Before"
-      )
-
-      # Filter by genres (many-to-many relationship)
-      genres = django_filters.ModelMultipleChoiceFilter(
-          queryset=User.objects.all(), field_name="genres__name", label="Genres"
-      )
-
-      # Filter by trusty (boolean filter)
-      is_trusty = django_filters.BooleanFilter()
-
-      # Filter by fee range (decimal filter)
-      min_fee = django_filters.NumberFilter(
-          field_name="fee", lookup_expr="gte", label="Min Fee"
-      )
-      max_fee = django_filters.NumberFilter(
-          field_name="fee", lookup_expr="lte", label="Max Fee"
-      )
-      type = django_filters.ChoiceFilter(
-          choices=[
-              ("music", "Musico"),
-              ("establishment", "Estabelecimento"),
-          ],
-      )
-
-      class Meta:
-          model = settings.AUTH_USER_MODEL,
-          fields = [
-              "username",
-              "email",
-              "is_active",
-              "is_trusty",
-              "genres",
-              "date_joined_start",
-              "date_joined_end",
-              "min_fee",
-              "max_fee",
-              "type",
-          ]
-```
+## Contributing
+Contributions are always welcome! Please feel free to open an issue or submit a pull request.

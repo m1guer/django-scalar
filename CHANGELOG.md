@@ -7,12 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Add a class-based view that derives from `SpectacularApiView`
+- Make `drf-spectacular` an optional dependency
+
+## [0.2.0] - 2025-05-02
+
+- v0.2.0 feat: introduce configurable Scalar view and app settings (#3)
+- Add `app_settings` for centralized SCALAR_* default management
+- Add tests for custom configuration and theme behavior
+- Add installation and usage details to README.md
+
+### Changed
+
+- Updated `scalar_viewer` with custom parameters and theme support
+- Updated `scalar.html` for conditional theme handling
+
+### Removed
+
+- Unnecessary Swagger UI (rendered via DRF-Spectacular) from urls.py
+
+## [0.1.8] - 2025-04-29
+
 ### Added
-
-- v0.1.10 Add a class-based view that derives from `SpectacularApiView`
-- v0.1.9 Add app settings to override openapi url, etc.
-
-## [0.1.8] - 2025-04-25=7
 
 - Added test suite for views, `get_filter_parameters`, and URLs
 - Added end-to-end tests that verify HTML contains the expected context data
@@ -21,8 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
- - Switch `scalar_viewer` to return a `TemplateResponse` instead of `HttpResponse`
- - Switched QA (linting) to using pre-commit, including ruff, mypy, djlint, etc.
+ - Changed project maintainer dependencies to use dependency-groups (installed with `--group` flag)
+  instead of optional-dependencies (installed with `--extra` flag).
+ - Change `scalar_viewer` to return a `TemplateResponse` instead of `HttpResponse`
+ - Update QA (linting) to using pre-commit, including: ruff, mypy, djlint, etc.
 
 ## [0.1.7] - 2025-04-25
 

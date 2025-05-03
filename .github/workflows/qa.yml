@@ -1,6 +1,12 @@
-name: Ruff it out
+name: Quality Checks
 
-on: [push]
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   qa:
@@ -19,13 +25,13 @@ jobs:
         activate-environment: true
     - name: Install dependencies
       run: |
-        uv sync --extra test
+        uv sync --group test --group qa
     - name: Install pre-commit
       run: |
         uv run --frozen pre-commit install
-    - name: "Run pre-commit with python version ${{ matrix.python-version }}"
+    - name: "Run pre-commit (py-${{ matrix.python-version }})"
       run: |
         uv run --frozen pre-commit run --all-files
-    - name: "Run tests with python version ${{ matrix.python-version }}"
+    - name: "Run tests (py-${{ matrix.python-version }})"
       run: |
         uv run --frozen pytest
